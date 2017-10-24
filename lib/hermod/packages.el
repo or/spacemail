@@ -37,6 +37,12 @@
   (notmuch-tree "tag:inbox")
   (bind-map-change-major-mode-after-body-hook))
 
+(defun hermod/unread ()
+  (interactive)
+  (require 'notmuch)
+  (notmuch-tree "tag:unread")
+  (bind-map-change-major-mode-after-body-hook))
+
 (defun hermod/tree-show-message ()
   (interactive)
   (notmuch-tree-show-message-in)
@@ -53,6 +59,7 @@
               "amm" 'hermod/hello
               "amn" 'hermod/new-mail
               "amj" 'hermod/jump-search
+              "amu" 'hermod/unread
               "ami" 'hermod/inbox)
 
             (spacemacs/set-leader-keys-for-major-mode 'notmuch-show
