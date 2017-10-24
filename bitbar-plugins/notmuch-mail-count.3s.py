@@ -7,6 +7,7 @@ import sys
 
 script_dir = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "../bin")
 
+unread_mails = subprocess.check_output("/usr/local/bin/notmuch tag -inbox -new -unread +sent folder:sent AND tag:unread AND tag:new".split())
 unread_mails = subprocess.check_output("/usr/local/bin/notmuch search tag:unread".split())
 
 mails = list(filter(lambda x: x.strip(), unread_mails.decode("utf-8").split("\n")))
