@@ -16,7 +16,7 @@ function fail {
 
 echo "archiving mail..."
 echo "~~~"
-./notmuch-archive
+./notmuch-archive >/dev/null 2>&1
 
 echo "syncing..."
 echo "~~~"
