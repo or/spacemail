@@ -1,0 +1,20 @@
+#!/bin/bash
+
+export PATH=/usr/local/bin:$PATH
+script_path=$(readlink "$0")
+if [ -z "$script_path" ]; then
+    script_path="$0"
+fi
+
+cd "$(dirname "$script_path")"
+
+function fail {
+    echo ":warning: failed"
+    echo "~~~"
+    exit 0
+}
+
+echo "syncing..."
+echo "~~~"
+offlineimap >> /tmp/sync-mail.log 2>&1 || fail
+./notmuch-poll

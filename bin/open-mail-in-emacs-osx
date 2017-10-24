@@ -1,0 +1,5 @@
+#!/bin/bash -e
+
+EMACS_PATH=/Applications/Emacs.app
+$EMACS_PATH/Contents/MacOS/bin/emacsclient --eval "(notmuch-show \"$1\")"
+open $EMACS_PATH

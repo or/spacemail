@@ -1,0 +1,19 @@
+** Requirements
+- offlineimap
+#+BEGIN_SRC sh
+$ brew install offlineimap
+#+END_SRC
+- notmuch
+#+BEGIN_SRC sh
+$ brew install notmuch
+#+END_SRC
+- [[http://growl.info/downloads][Growl]] and [[http://growl.info/downloads#growlnotify][GrowlNotify]]
+- [[https://github.com/matryer/bitbar][BitBar]] [[https://github.com/matryer/bitbar/releases/tag/v2.0.0-beta10][v2.0 beta 10]] or higher
+- =pinentry-mac= for GPG to ask for the password when decrypting
+  =~/.authinfo.gpg=
+#+BEGIN_SRC sh
+$ brew install pinentry-mac
+#+END_SRC
+
+** Installation
+Run BitBar and set the plugins directory to =bitbar-plugins=.
