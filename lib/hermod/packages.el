@@ -247,3 +247,7 @@
           (insert signature))
         (goto-char (point-max))
         (or (bolp) (newline))))))
+
+(eval-after-load "notmuch"
+  '(defun notmuch-show-insert-part-text/calendar (msg part content-type nth depth button)
+    (notmuch-show-insert-part-*/* msg part content-type nth depth button)))
