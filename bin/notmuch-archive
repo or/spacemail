@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+maildir=$(grep -A 3 '\[database\]' ~/.notmuch-config | grep path | sed 's/^ *path=//')
+
+notmuch tag +archived NOT tag:archived AND date:..31-days
+
+notmuch search --output=files NOT folder:archive AND tag:archived | xargs -I{} mv {} $maildir/archive/cur

@@ -14,6 +14,10 @@ function fail {
     exit 0
 }
 
+echo "archiving mail..."
+echo "~~~"
+./notmuch-archive
+
 echo "syncing..."
 echo "~~~"
 offlineimap >> /tmp/sync-mail.log 2>&1 || fail
