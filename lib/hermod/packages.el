@@ -200,3 +200,50 @@
   (when notmuch-archive-tags
     (notmuch-tree-tag-thread
      (notmuch-tag-change-list notmuch-archive-tags t))))
+
+(eval-after-load "message"
+  '(defun message-insert-signature (&optional force)
+    "Insert a signature.  See documentation for variable `message-signature'."
+    (interactive (list 0))
+    (let* ((signature
+            (cond
+             ((and (null message-signature)
+                   (eq force 0))
+              (save-excursion
+                (goto-char (point-max))
+                (not (re-search-backward message-signature-separator nil t))))
+             ((and (null message-signature)
+                   force)
+              t)
+             ((functionp message-signature)
+              (funcall message-signature))
+             ((listp message-signature)
+              (eval message-signature))
+             (t message-signature)))
+           signature-file)
+      (setq signature
+            (cond ((stringp signature)
+                   signature)
+                  ((and (eq t signature) message-signature-file)
+                   (setq signature-file
+                         (if (and message-signature-directory
+                                  ;; don't actually use the signature directory
+                                  ;; if message-signature-file contains a path.
+                                  (not (file-name-directory
+                                        message-signature-file)))
+                             (expand-file-name message-signature-file
+                                               message-signature-directory)
+                           message-signature-file))
+                   (file-exists-p signature-file))))
+      (when signature
+        (goto-char (point-max))
+        ;; Insert the signature.
+        (unless (bolp)
+          (newline))
+        (when message-signature-insert-empty-line
+          (newline))
+        (if (eq signature t)
+            (insert-file-contents signature-file)
+          (insert signature))
+        (goto-char (point-max))
+        (or (bolp) (newline))))))
