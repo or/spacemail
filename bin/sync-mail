@@ -11,7 +11,7 @@ cd "$(dirname "$script_path")"
 function fail {
     msg=$1
     if [ -z "$msg" ]; then
-        icon = ":warning: failed"
+        msg=":warning: failed"
     fi
     echo "$msg"
     echo "~~~"
