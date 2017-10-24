@@ -12,11 +12,13 @@ cd "$(dirname "$script_path")"
 
 echo "importing mail..."
 echo "~~~"
+
+previous_unread_count=$(notmuch count --output=threads tag:unread)
 notmuch new >> $output 2>&1
 
 new_count=$(notmuch count tag:new)
 unread_count=$(notmuch count --output=threads tag:unread)
-if [[ "$new_count" -gt 0 && "$unread_count" -gt 0 ]]; then
+if [[ "$new_count" -gt 0 && "$unread_count" -gt 0 && "$unread_count" -ne "$previous_unread_count" ]]; then
   growlnotify --image ../media/mail-icon-1.png -m "$new_count new mails"$'\n'"$unread_count unread threads" -n Email >> $output 2>&1
 fi
 
