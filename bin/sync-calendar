@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os.path
 import re
+from datetime import datetime, date, timedelta
 from glob import glob
 from icalendar import Calendar
 from PyOrgMode import PyOrgMode
@@ -8,30 +9,44 @@ from PyOrgMode import PyOrgMode
 
 BLANK_LINES = re.compile(r'(\n *)(\n *)+', re.MULTILINE)
 TRAILING_SPACES = re.compile(r' +(?=\n)', re.MULTILINE)
-ORG_TIME_FORMAT = "%Y-%m-%d %a %H:%M:%S"
+WRAP_AT_80 = re.compile(r'(?<=\n[^\n]{80})(?=[^\n]{10})', re.MULTILINE)
+TRAILING_NEWLINES = re.compile(r'[ \n]+$', re.MULTILINE)
+ORG_TIME_FORMAT = "%Y-%m-%d %a %H:%M"
 CALENDARS_PATH = "~/Library/Calendars"
-ORG_FILE = "~/calendars.org"
+ORG_CALENDAR_PATH = "~/org/calendar"
+
+ORG_CALENDAR_PATH = os.path.expanduser(ORG_CALENDAR_PATH)
+CALENDARS_PATH = os.path.expanduser(CALENDARS_PATH)
 
 
-def get_event(cal):
+def get_events(cal):
     for component in cal.walk():
         if component.name == "VEVENT":
-            return component
+            yield component
 
 
-def load_events(directory):
+def load_events(directory, max_age=None):
     entries = {}
     for filename in glob(directory + "/**/*.ics", recursive=True):
         ics_data = open(filename, "rb").read()
         cal = Calendar.from_ical(ics_data)
-        event = get_event(cal)
-        if not event:
-            continue
+        # going through all events will make sure the latest version
+        # of it will make it into entries
+        for event in get_events(cal):
+            start = event.get("dtstart")
+            d = start.dt
+            if isinstance(d, date):
+                d = datetime(d.year, d.month, d.day)
 
-        uid = event.get("uid")
-        entries[uid] = (filename, cal)
-        # if len(entries) == 5:
-        #     return entries
+            if d < datetime.now() - max_age:
+                continue
+
+            uid = event.get("uid")
+            if uid not in entries:
+                entries[uid] = (filename, event)
+            else:
+                # update the event with the changes
+                entries[uid][1].update(event)
 
     return entries
 
@@ -40,10 +55,11 @@ def set_property(drawer, name, value):
     name = name.upper()
     for prop in drawer.content:
         if prop.name == name:
-            prop.value = value
+            prop.value = value or ""
             return
 
-    drawer.append(PyOrgMode.OrgDrawer.Property(name, value))
+    if value:
+        drawer.append(PyOrgMode.OrgDrawer.Property(name, value))
 
 
 def find_element(node, uid):
@@ -78,29 +94,58 @@ def update_or_add_quote(element, description):
         if not isinstance(e, str):
             continue
 
-        if e.strip().upper() == '#+BEGIN_EXAMPLE':
+        if e.strip().upper() == '#+BEGIN_QUOTE':
             quote_start_index = i
-        elif e.strip().upper() == '#+END_EXAMPLE':
+        elif e.strip().upper() == '#+END_QUOTE':
             quote_end_index = i
 
     description = description or ""
     description = BLANK_LINES.sub("\n\n", description)
     description = " " + description.replace("\n", "\n ")
     description = TRAILING_SPACES.sub("", description)
+    description = TRAILING_NEWLINES.sub("", description)
+
+    # needed for the lookbehind to work on the first line, removed afterwards
+    description = "\n" + description
+    changed = True
+    while changed:
+        before = description
+        description = WRAP_AT_80.sub("\n", description)
+        changed = (description != before)
+
+    # remove the initial newline
+    description = description[1:]
+
     if quote_start_index and quote_end_index:
+        if description:
+            chunk = [description + "\n"]
+        else:
+            chunk = []
+
         element.content[quote_start_index + 1:quote_end_index] \
-            = [description + "\n"]
-    else:
-        element.content.append("#+BEGIN_EXAMPLE\n")
+            = chunk
+
+    elif description:
+        element.content.append("#+BEGIN_QUOTE\n")
         element.content.append(description + "\n")
-        element.content.append("#+END_EXAMPLE\n")
+        element.content.append("#+END_QUOTE\n")
 
 
 def escape_brackets(s):
+    if not s:
+        return s
+
     return s.replace("[", r"\[").replace("]", r"\]")
 
 
-def update_element(element, event):
+def fix_address(s):
+    if not s:
+        return s
+
+    return "[[{}][{}]]".format(s, s.replace("mailto:", ""))
+
+
+def update_element(element, event, filename):
     # import ipdb; ipdb.set_trace()
     element.heading = escape_brackets(event.get("summary"))
 
@@ -113,35 +158,62 @@ def update_element(element, event):
     set_property(drawer, "TIME", "<{start}>--<{end}>"
                  .format(start=start, end=end))
 
+    attendees = event.get("attendee")
+    if not attendees:
+        attendees = []
+    else:
+        attendees = [fix_address(x) for x in attendees]
+
+    set_property(drawer, "ORGANIZER", fix_address(event.get("organizer")))
+    set_property(drawer, "ATTENDEES", ", ".join(attendees))
+    set_property(drawer, "LOCATION", event.get("location"))
+    set_property(drawer, "FILENAME", "[[{}][event.ics]]".format(filename))
+
     update_or_add_quote(element, event.get("description"))
 
 
-def add_entry(org_file, entry):
-    event = get_event(entry)
+def add_event(org_data, event, filename):
     element = PyOrgMode.OrgNode.Element()
     element.level = 1
-    update_element(element, event)
-    org_file.root.append_clean("\n")
-    org_file.root.append_clean(element)
+    update_element(element, event, filename)
+    org_data.root.append_clean(element)
+    org_data.root.append_clean("\n")
 
 
-def update_or_add_entry(org_file, entry):
-    event = get_event(entry)
-    element = find_element(org_file.root, event.get("uid"))
+def update_or_add_event(org_data, event, filename):
+    element = find_element(org_data.root, event.get("uid"))
     if not element:
-        add_entry(org_file, entry)
+        add_event(org_data, event, filename)
     else:
-        update_element(element, event)
+        update_element(element, event, filename)
 
 
-ORG_FILE = os.path.expanduser(ORG_FILE)
-CALENDARS_PATH = os.path.expanduser(CALENDARS_PATH)
+def import_to_org():
+    for f in glob(ORG_CALENDAR_PATH + "/*.org"):
+        os.remove(f)
 
-entries = load_events(CALENDARS_PATH)
-org_file = PyOrgMode.OrgDataStructure()
-org_file.load_from_file(ORG_FILE)
+    entries = load_events(CALENDARS_PATH, max_age=timedelta(days=30))
 
-for _filename, entry in entries.values():
-    update_or_add_entry(org_file, entry)
+    org_data = PyOrgMode.OrgDataStructure()
+    index = 0
+    size = 0
+    chunk_size = 10
+    for filename, event in entries.values():
+        add_event(org_data, event, filename)
+        size += 1
+        if size == chunk_size:
+            org_data.save_to_file(
+                os.path.join(ORG_CALENDAR_PATH,
+                             "imported-{:02d}.org".format(index)))
+            org_data = PyOrgMode.OrgDataStructure()
+            size = 0
+            index += 1
 
-org_file.save_to_file(ORG_FILE)
+    if size > 0:
+        org_data.save_to_file(
+            os.path.join(ORG_CALENDAR_PATH,
+                         "imported-{:02d}.org".format(index)))
+
+
+if __name__ == "__main__":
+    import_to_org()
