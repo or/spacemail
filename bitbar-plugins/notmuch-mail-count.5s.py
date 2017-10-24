@@ -5,7 +5,7 @@ import re
 import subprocess
 import sys
 
-script_dir = os.path.join(os.path.basename(sys.argv[0]), "../bin")
+script_dir = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "../bin")
 
 unread_mails = subprocess.check_output("/usr/local/bin/notmuch search tag:unread".split())
 
