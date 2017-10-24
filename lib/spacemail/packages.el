@@ -1,66 +1,66 @@
-(setq hermod-packages
+(setq spacemail-packages
     '(notmuch
       notmuch-labeler))
 
 ;; List of packages to exclude.
-(setq hermod-excluded-packages '())
+(setq spacemail-excluded-packages '())
 
-(defun hermod/hello ()
+(defun spacemail/hello ()
   (interactive)
   (require 'notmuch)
   (notmuch-hello))
 
-(defun hermod/search ()
+(defun spacemail/search ()
   (interactive)
   (require 'notmuch)
   (notmuch-search :sort-order newes-first))
 
-(defun hermod/tree ()
+(defun spacemail/tree ()
   (interactive)
   (require 'notmuch)
   (notmuch-tree))
 
-(defun hermod/jump-search ()
+(defun spacemail/jump-search ()
   (interactive)
   ;; (require 'notmuch)
   (notmuch-jump-search)
   (bind-map-change-major-mode-after-body-hook))
 
-(defun hermod/new-mail ()
+(defun spacemail/new-mail ()
   (interactive)
   (require 'notmuch)
   (notmuch-mua-new-mail))
 
-(defun hermod/inbox-and-unread ()
+(defun spacemail/inbox-and-unread ()
   (interactive)
   (require 'notmuch)
   (notmuch-tree "tag:inbox or tag:unread")
   (bind-map-change-major-mode-after-body-hook))
 
-(defun hermod/unread ()
+(defun spacemail/unread ()
   (interactive)
   (require 'notmuch)
   (notmuch-tree "tag:unread")
   (bind-map-change-major-mode-after-body-hook))
 
-(defun hermod/tree-show-message ()
+(defun spacemail/tree-show-message ()
   (interactive)
   (notmuch-tree-show-message-in)
   (select-window notmuch-tree-message-window))
 
-;; For each package, define a function hermod/init-<package-notmuch>
-(defun hermod/init-notmuch ()
+;; For each package, define a function spacemail/init-<package-notmuch>
+(defun spacemail/init-notmuch ()
   "Initialize the package"
   (use-package notmuch
     :defer t
     ;; :commands notmuch
     :init (progn
             (spacemacs/set-leader-keys
-              "amm" 'hermod/hello
-              "amn" 'hermod/new-mail
-              "amj" 'hermod/jump-search
-              "amu" 'hermod/unread
-              "ami" 'hermod/inbox-and-unread)
+              "amm" 'spacemail/hello
+              "amn" 'spacemail/new-mail
+              "amj" 'spacemail/jump-search
+              "amu" 'spacemail/unread
+              "ami" 'spacemail/inbox-and-unread)
 
             (spacemacs/set-leader-keys-for-major-mode 'notmuch-show
               "tt" 'notmuch-show-add-tag
@@ -132,7 +132,7 @@
                 (kbd "u") 'notmuch-tree-mark-message-unread-then-next
                 (kbd "U") 'notmuch-tree-unarchive-thread
                 (kbd "?") 'notmuch-help
-                (kbd "RET") 'hermod/tree-show-message
+                (kbd "RET") 'spacemail/tree-show-message
                 (kbd "}") 'notmuch-tree-scroll-or-next
                 (kbd "{") 'notmuch-tree-scroll-message-window-back)
 
@@ -167,7 +167,7 @@
     )
   )
 
-(defun hermod/init-notmuch-labeler ()
+(defun spacemail/init-notmuch-labeler ()
   "Initialize the package"
   (use-package notmuch-labeler
     :defer t
