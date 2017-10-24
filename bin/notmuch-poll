@@ -14,21 +14,16 @@ echo "importing mail..."
 echo "~~~"
 notmuch new >> $output 2>&1
 
-echo "tagging messages..."
-echo "~~~"
-. ~/.notmuch-tagging-rules $output 2>&1
-
 new_count=$(notmuch count tag:new)
 unread_count=$(notmuch count --output=threads tag:unread)
-if [ "$new_count" -gt 0 ]; then
+if [[ "$new_count" -gt 0 && "$unread_count" -gt 0 ]]; then
   growlnotify --image ../media/mail-icon-1.png -m "$new_count new mails"$'\n'"$unread_count unread threads" -n Email >> $output 2>&1
 fi
 
 notmuch tag -new tag:new >> $output 2>&1
 if [ "$new_count" -gt 0 ]; then
   echo "$new_count new mails | color=green"
-  echo "~~~"
 else
   echo "no new mail | color=#606060"
-  echo "~~~"
 fi
+echo "~~~"
