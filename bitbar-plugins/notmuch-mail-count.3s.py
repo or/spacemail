@@ -5,6 +5,29 @@ import re
 import subprocess
 import sys
 
+def is_notmuch_running():
+    output = subprocess.check_output(["ps", "-x"])
+    for line in output.decode("utf-8").split("\n"):
+        words = line.split()
+
+        if len(words) <= 3:
+            continue
+
+        if words[3] == "notmuch":
+            return True
+
+        if len(words) <= 4:
+            continue
+
+        if words[4].endswith("offlineimap.py"):
+            return True
+
+    return False
+
+if is_notmuch_running():
+    print("waiting for sync... | color=gray")
+    sys.exit(0)
+
 script_dir = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "../bin")
 
 unread_mails = subprocess.check_output("/usr/local/bin/notmuch tag -inbox -new -unread +sent folder:sent AND tag:unread AND tag:new".split())
