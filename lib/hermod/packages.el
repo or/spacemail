@@ -31,10 +31,10 @@
   (require 'notmuch)
   (notmuch-mua-new-mail))
 
-(defun hermod/inbox ()
+(defun hermod/inbox-and-unread ()
   (interactive)
   (require 'notmuch)
-  (notmuch-tree "tag:inbox")
+  (notmuch-tree "tag:inbox or tag:unread")
   (bind-map-change-major-mode-after-body-hook))
 
 (defun hermod/unread ()
@@ -60,7 +60,7 @@
               "amn" 'hermod/new-mail
               "amj" 'hermod/jump-search
               "amu" 'hermod/unread
-              "ami" 'hermod/inbox)
+              "ami" 'hermod/inbox-and-unread)
 
             (spacemacs/set-leader-keys-for-major-mode 'notmuch-show
               "tt" 'notmuch-show-add-tag
