@@ -91,7 +91,8 @@
 
             (spacemacs/set-leader-keys-for-major-mode 'notmuch-message-mode
               "," 'notmuch-mua-send-and-exit
-              "k" 'message-kill-buffer)
+              "k" 'message-kill-buffer
+              "s" 'notmuch-draft-save)
             )
 
     :config (progn
