@@ -101,13 +101,13 @@
               ;;       (lambda (prompt collection initial-input)
               ;;         (completing-read prompt (cons initial-input collection) nil t nil 'notmuch-address-history)))
 
-              (evilified-state-evilify-map notmuch-hello-mode-map
+              (evilified-state-evilify-map 'notmuch-hello-mode-map
                 :mode notmuch-hello-mode
                 :bindings
                 (kbd "q") 'notmuch-bury-or-kill-this-buffer
                 )
 
-              (evilified-state-evilify-map notmuch-search-mode-map
+              (evilified-state-evilify-map 'notmuch-search-mode-map
                 :mode notmuch-search-mode
                 :bindings
                 (kbd "q") 'notmuch-bury-or-kill-this-buffer
@@ -116,13 +116,20 @@
                 (kbd "f") 'notmuch-search-filter
                 )
 
-              (evilified-state-evilify-map notmuch-show-mode-map
-                :mode notmuch-show-mode)
+              (evilified-state-evilify-map 'notmuch-show-stash-map :mode notmuch-show-mode)
+              (evilified-state-evilify-map 'notmuch-show-part-map :mode notmuch-show-mode)
+              (evilified-state-evilify-map 'notmuch-show-mode-map :mode notmuch-show-mode
+                :bindings
+                (kbd "N") 'notmuch-show-next-message
+                (kbd "n") 'notmuch-show-next-open-message)
 
-              (evilified-state-evilify-map notmuch-tree-mode-map
+              (evilified-state-evilify-map 'notmuch-tree-mode-map
                 :mode notmuch-tree-mode
                 :bindings
                 (kbd "q") 'notmuch-bury-or-kill-this-buffer
+                (kbd "r") 'notmuch-tree-mark-message-read-then-next
+                (kbd "u") 'notmuch-tree-mark-message-unread-then-next
+                (kbd "U") 'notmuch-tree-unarchive-thread
                 (kbd "?") 'notmuch-help
                 (kbd "RET") 'hermod/tree-show-message
                 (kbd "}") 'notmuch-tree-scroll-or-next
@@ -140,6 +147,18 @@
               ;;          (kbd "n") 'notmuch-show-next-open-message)
               ;; (evilify notmuch-tree-mode notmuch-tree-mode-map)
               ;; (evilify notmuch-search-mode notmuch-search-mode-map)
+
+              (evil-define-key 'visual notmuch-search-mode-map
+                "*" 'notmuch-search-tag-all
+                "-" 'notmuch-search-remove-tag
+                "+" 'notmuch-search-add-tag
+                )
+
+              ;; (spacemacs/set-leader-keys-for-major-mode 'notmuch-show-mode
+              ;;   "nc" 'notmuch-show-stack-cc
+              ;;   "n|" 'notmuch-show-pipe-message
+              ;;   "nw" 'notmuch-show-save-attachments
+              ;;   "nv" 'notmuch-show-view-raw-message)
               )
     ;; :init (tabbar-mode)
     ;; :bind (("C-<tab>" . tabbar-forward-tab)
@@ -153,3 +172,30 @@
     :defer t
     )
   )
+
+(setq-default notmuch-search-oldest-first nil)
+(setq-default notmuch-archive-tags '("-inbox" "-unread"))
+(eval-after-load "org"
+  '(require 'org-notmuch))
+
+(defun notmuch-tree-mark-message-unread-then-next (&optional unread)
+  "Mark the current message as unread and move to next matching message."
+  (interactive "P")
+  (notmuch-tree-mark-message-read t)
+  (notmuch-tree-next-matching-message))
+
+(defun notmuch-tree-mark-message-read-then-next (&optional unread)
+  "Mark the current message as read and move to next matching message."
+  (interactive "P")
+  (notmuch-tree-mark-message-read nil)
+  (notmuch-tree-next-matching-message))
+
+(defun notmuch-tree-mark-message-read (&optional unread)
+  (interactive "P")
+  (notmuch-tree-tag (notmuch-tag-change-list '("-unread") unread)))
+
+(defun notmuch-tree-unarchive-thread (&optional unarchive)
+  (interactive "P")
+  (when notmuch-archive-tags
+    (notmuch-tree-tag-thread
+     (notmuch-tag-change-list notmuch-archive-tags t))))
