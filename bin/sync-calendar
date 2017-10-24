@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+import os.path
+import re
+from glob import glob
+from icalendar import Calendar
+from PyOrgMode import PyOrgMode
+
+
+BLANK_LINES = re.compile(r'(\n *)(\n *)+', re.MULTILINE)
+TRAILING_SPACES = re.compile(r' +(?=\n)', re.MULTILINE)
+ORG_TIME_FORMAT = "%Y-%m-%d %a %H:%M:%S"
+CALENDARS_PATH = "~/Library/Calendars"
+ORG_FILE = "~/calendars.org"
+
+
+def get_event(cal):
+    for component in cal.walk():
+        if component.name == "VEVENT":
+            return component
+
+
+def load_events(directory):
+    entries = {}
+    for filename in glob(directory + "/**/*.ics", recursive=True):
+        ics_data = open(filename, "rb").read()
+        cal = Calendar.from_ical(ics_data)
+        event = get_event(cal)
+        if not event:
+            continue
+
+        uid = event.get("uid")
+        entries[uid] = (filename, cal)
+        # if len(entries) == 5:
+        #     return entries
+
+    return entries
+
+
+def set_property(drawer, name, value):
+    name = name.upper()
+    for prop in drawer.content:
+        if prop.name == name:
+            prop.value = value
+            return
+
+    drawer.append(PyOrgMode.OrgDrawer.Property(name, value))
+
+
+def find_element(node, uid):
+    if isinstance(node, PyOrgMode.OrgNode.Element):
+        for e in node.content:
+            if isinstance(e, PyOrgMode.OrgDrawer.Element):
+                for p in e.content:
+                    if p.name == "UID" and p.value.upper() == uid.upper():
+                        return node
+            else:
+                element = find_element(e, uid)
+                if element:
+                    return element
+
+
+def get_or_create_properties_drawer(element):
+    drawer = None
+    for e in element.content:
+        if isinstance(e, PyOrgMode.OrgDrawer.Element) and \
+           e.name == "PROPERTIES":
+            return e
+
+    drawer = PyOrgMode.OrgDrawer.Element("PROPERTIES")
+    element.append_clean(drawer)
+    return drawer
+
+
+def update_or_add_quote(element, description):
+    quote_start_index = None
+    quote_end_index = None
+    for i, e in enumerate(element.content):
+        if not isinstance(e, str):
+            continue
+
+        if e.strip().upper() == '#+BEGIN_EXAMPLE':
+            quote_start_index = i
+        elif e.strip().upper() == '#+END_EXAMPLE':
+            quote_end_index = i
+
+    description = description or ""
+    description = BLANK_LINES.sub("\n\n", description)
+    description = " " + description.replace("\n", "\n ")
+    description = TRAILING_SPACES.sub("", description)
+    if quote_start_index and quote_end_index:
+        element.content[quote_start_index + 1:quote_end_index] \
+            = [description + "\n"]
+    else:
+        element.content.append("#+BEGIN_EXAMPLE\n")
+        element.content.append(description + "\n")
+        element.content.append("#+END_EXAMPLE\n")
+
+
+def escape_brackets(s):
+    return s.replace("[", r"\[").replace("]", r"\]")
+
+
+def update_element(element, event):
+    # import ipdb; ipdb.set_trace()
+    element.heading = escape_brackets(event.get("summary"))
+
+    drawer = get_or_create_properties_drawer(element)
+    set_property(drawer, "UID", event.get("uid").upper())
+    start = event.get("dtstart")
+    end = event.get("dtend")
+    start = start.dt.strftime(ORG_TIME_FORMAT)
+    end = end.dt.strftime(ORG_TIME_FORMAT)
+    set_property(drawer, "TIME", "<{start}>--<{end}>"
+                 .format(start=start, end=end))
+
+    update_or_add_quote(element, event.get("description"))
+
+
+def add_entry(org_file, entry):
+    event = get_event(entry)
+    element = PyOrgMode.OrgNode.Element()
+    element.level = 1
+    update_element(element, event)
+    org_file.root.append_clean("\n")
+    org_file.root.append_clean(element)
+
+
+def update_or_add_entry(org_file, entry):
+    event = get_event(entry)
+    element = find_element(org_file.root, event.get("uid"))
+    if not element:
+        add_entry(org_file, entry)
+    else:
+        update_element(element, event)
+
+
+ORG_FILE = os.path.expanduser(ORG_FILE)
+CALENDARS_PATH = os.path.expanduser(CALENDARS_PATH)
+
+entries = load_events(CALENDARS_PATH)
+org_file = PyOrgMode.OrgDataStructure()
+org_file.load_from_file(ORG_FILE)
+
+for _filename, entry in entries.values():
+    update_or_add_entry(org_file, entry)
+
+org_file.save_to_file(ORG_FILE)
