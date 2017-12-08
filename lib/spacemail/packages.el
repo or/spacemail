@@ -112,17 +112,8 @@
                 :mode notmuch-search-mode
                 :bindings
                 (kbd "q") 'notmuch-bury-or-kill-this-buffer
-                (kbd "r") 'notmuch-search-reply-to-thread
-                (kbd "R") 'notmuch-search-reply-to-thread-sender
                 (kbd "f") 'notmuch-search-filter
                 )
-
-              (evilified-state-evilify-map 'notmuch-show-stash-map :mode notmuch-show-mode)
-              (evilified-state-evilify-map 'notmuch-show-part-map :mode notmuch-show-mode)
-              (evilified-state-evilify-map 'notmuch-show-mode-map :mode notmuch-show-mode
-                :bindings
-                (kbd "N") 'notmuch-show-next-message
-                (kbd "n") 'notmuch-show-next-open-message)
 
               (evilified-state-evilify-map 'notmuch-tree-mode-map
                 :mode notmuch-tree-mode
@@ -135,6 +126,15 @@
                 (kbd "RET") 'spacemail/tree-show-message
                 (kbd "}") 'notmuch-tree-scroll-or-next
                 (kbd "{") 'notmuch-tree-scroll-message-window-back)
+
+              (evilified-state-evilify-map 'notmuch-show-stash-map :mode notmuch-show-mode)
+              (evilified-state-evilify-map 'notmuch-show-part-map :mode notmuch-show-mode)
+              (evilified-state-evilify-map 'notmuch-show-mode-map :mode notmuch-show-mode
+                :bindings
+                (kbd "N") 'notmuch-show-next-message
+                (kbd "n") 'notmuch-show-next-open-message
+                (kbd "R") 'notmuch-show-reply
+                (kbd "r") 'notmuch-show-reply-sender)
 
               ;; (evilify notmuch-hello-mode notmuch-hello-mode-map
               ;;          (kbd "C-j") 'widget-forward
