@@ -48,6 +48,11 @@
   (notmuch-tree-show-message-in)
   (select-window notmuch-tree-message-window))
 
+(defun spacemail/search-show-message ()
+  (interactive)
+  (notmuch-search-show-thread)
+  (select-window notmuch-tree-message-window))
+
 ;; For each package, define a function spacemail/init-<package-notmuch>
 (defun spacemail/init-notmuch ()
   "Initialize the package"
@@ -84,7 +89,7 @@
               ;; "d" 'notmuch-tree-archive-message-then-next
               ;; "A" 'notmuch-tree-archive-thread
               "g" 'notmuch-poll-and-refresh-this-buffer
-              "s" 'notmuch-search-from-tree-current-query
+              "s" 'notmuch-tree-to-tree
               "c" 'notmuch-show-stash-map
               "m" 'notmuch-mua-new-mail
               "w" 'notmuch-show-save-attachments)
@@ -113,6 +118,7 @@
                 :bindings
                 (kbd "q") 'notmuch-bury-or-kill-this-buffer
                 (kbd "f") 'notmuch-search-filter
+                (kbd "s") 'notmuch-tree-to-tree
                 )
 
               (evilified-state-evilify-map 'notmuch-tree-mode-map
@@ -125,7 +131,9 @@
                 (kbd "?") 'notmuch-help
                 (kbd "RET") 'spacemail/tree-show-message
                 (kbd "}") 'notmuch-tree-scroll-or-next
-                (kbd "{") 'notmuch-tree-scroll-message-window-back)
+                (kbd "{") 'notmuch-tree-scroll-message-window-back
+                (kbd "s") 'notmuch-tree-to-tree
+                )
 
               (evilified-state-evilify-map 'notmuch-show-stash-map :mode notmuch-show-mode)
               (evilified-state-evilify-map 'notmuch-show-part-map :mode notmuch-show-mode)
