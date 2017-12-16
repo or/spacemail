@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import subprocess
 
 
@@ -6,7 +6,7 @@ def get_password(host, port, account):
     try:
         data = subprocess.check_output(
             r"/usr/local/bin/gpg -q --no-tty --batch -d ~/.authinfo.gpg",
-            shell=True)
+            shell=True).decode('utf-8')
     except subprocess.CalledProcessError:
         data = ""
 
