@@ -165,9 +165,6 @@ def add_event(org_data, event, filename):
 
 def import_to_org():
     calendar_file = os.path.join(ORG_CALENDAR_PATH, "calendar.org")
-    if os.path.exists(calendar_file):
-        os.remove(calendar_file)
-
     entries = load_events(CALENDARS_PATH)
 
     org_data = PyOrgMode.OrgDataStructure()
