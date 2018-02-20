@@ -17,3 +17,14 @@ $ brew install pinentry-mac
 
 ** Installation
 Run BitBar and set the plugins directory to =bitbar-plugins=.
+
+** Options
+If you want to archive all email that is older than 30 days, then you can
+add this to =~/.spacemailrc=:
+#+BEGIN_QUOTE ini
+[general]
+archive = true
+#+END_QUOTE
+
+Archiving will move old emails to a local folder, so offlineimap will delete
+them on the server on the next sync.
