@@ -1,6 +1,7 @@
 (setq spacemail-packages
     '(notmuch
-      notmuch-labeler))
+      notmuch-labeler
+      w3m))
 
 ;; List of packages to exclude.
 (setq spacemail-excluded-packages '())
@@ -182,6 +183,15 @@
     )
   )
 
+(defun spacemail/init-w3m ()
+  "Initialize the package"
+  (use-package w3m
+    :defer t
+    :init (progn
+            (setq w3m-fill-column 72))
+    )
+  )
+
 (setq-default notmuch-search-oldest-first nil)
 (setq-default notmuch-archive-tags '("-inbox" "-unread"))
 (eval-after-load "org"
@@ -263,4 +273,4 @@
 (eval-after-load "notmuch"
   '(setq notmuch-show-mark-read-tags '("-unread" "+read")))
 (eval-after-load "notmuch"
-  '(setq mm-text-html-renderer 'gnus-w3m))
+  '(setq mm-text-html-renderer 'w3m))
