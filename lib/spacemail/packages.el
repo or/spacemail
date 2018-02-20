@@ -133,7 +133,7 @@
     )
 
   ;; fixes: killing a notmuch buffer does not show the previous buffer
-  (push "\\*notmuch.+\\*" spacemacs-useful-buffers-regexp)
+  (push "\\*notmuch-show\\*" spacemacs-useful-buffers-regexp)
   )
 
 (defun spacemail/init-notmuch-labeler ()
