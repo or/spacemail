@@ -1,7 +1,7 @@
 (setq spacemail-packages
     '(notmuch
       notmuch-labeler
-      helm-notmuch
+      counsel-notmuch
       w3m))
 
 ;; List of packages to exclude.
@@ -16,7 +16,7 @@
     :init (progn
             (require 'notmuch)
             (spacemacs/set-leader-keys
-              "amm" 'helm-notmuch
+              "amm" 'counsel-notmuch
               "amn" 'spacemail/new-mail
               "amj" 'spacemail/jump-search
               "amu" 'spacemail/unread
@@ -155,9 +155,9 @@
     )
   )
 
-(defun spacemail/init-helm-notmuch ()
+(defun spacemail/init-counsel-notmuch ()
   "Initialize the package"
-  (use-package helm-notmuch
+  (use-package counsel-notmuch
     :defer t
     :init (with-eval-after-load 'notmuch)
     )
