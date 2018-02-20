@@ -1,6 +1,7 @@
 (setq spacemail-packages
     '(notmuch
       notmuch-labeler
+      helm-notmuch
       w3m))
 
 ;; List of packages to exclude.
@@ -15,7 +16,7 @@
     :init (progn
             (require 'notmuch)
             (spacemacs/set-leader-keys
-              "amm" 'spacemail/hello
+              "amm" 'helm-notmuch
               "amn" 'spacemail/new-mail
               "amj" 'spacemail/jump-search
               "amu" 'spacemail/unread
@@ -136,9 +137,7 @@
   "Initialize the package"
   (use-package notmuch-labeler
     :defer t
-    :init (progn
-            (require 'notmuch)
-            )
+    :init (with-eval-after-load 'notmuch)
     )
   )
 
@@ -148,6 +147,15 @@
     :defer t
     :init (progn
             (require 'w3m)
-            (setq w3m-fill-column 72))
+            (setq w3m-fill-column 72)
+            )
+    )
+  )
+
+(defun spacemail/init-helm-notmuch ()
+  "Initialize the package"
+  (use-package helm-notmuch
+    :defer t
+    :init (with-eval-after-load 'notmuch)
     )
   )
