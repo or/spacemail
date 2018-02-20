@@ -131,6 +131,9 @@
     ;; :bind (("C-<tab>" . tabbar-forward-tab)
     ;;        ("C-S-<tab>" . tabbar-backward-tab)))
     )
+
+  ;; fixes: killing a notmuch buffer does not show the previous buffer
+  (push "\\*notmuch.+\\*" spacemacs-useful-buffers-regexp)
   )
 
 (defun spacemail/init-notmuch-labeler ()
