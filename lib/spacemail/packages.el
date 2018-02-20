@@ -6,54 +6,6 @@
 ;; List of packages to exclude.
 (setq spacemail-excluded-packages '())
 
-(defun spacemail/hello ()
-  (interactive)
-  (require 'notmuch)
-  (notmuch-hello))
-
-(defun spacemail/search ()
-  (interactive)
-  (require 'notmuch)
-  (notmuch-search :sort-order newes-first))
-
-(defun spacemail/tree ()
-  (interactive)
-  (require 'notmuch)
-  (notmuch-tree))
-
-(defun spacemail/jump-search ()
-  (interactive)
-  ;; (require 'notmuch)
-  (notmuch-jump-search)
-  (bind-map-change-major-mode-after-body-hook))
-
-(defun spacemail/new-mail ()
-  (interactive)
-  (require 'notmuch)
-  (notmuch-mua-new-mail))
-
-(defun spacemail/inbox-and-unread ()
-  (interactive)
-  (require 'notmuch)
-  (notmuch-tree "tag:inbox or tag:unread")
-  (bind-map-change-major-mode-after-body-hook))
-
-(defun spacemail/unread ()
-  (interactive)
-  (require 'notmuch)
-  (notmuch-tree "tag:unread")
-  (bind-map-change-major-mode-after-body-hook))
-
-(defun spacemail/tree-show-message ()
-  (interactive)
-  (notmuch-tree-show-message-in)
-  (select-window notmuch-tree-message-window))
-
-(defun spacemail/search-show-message ()
-  (interactive)
-  (notmuch-search-show-thread)
-  (select-window notmuch-tree-message-window))
-
 ;; For each package, define a function spacemail/init-<package-notmuch>
 (defun spacemail/init-notmuch ()
   "Initialize the package"
@@ -61,6 +13,7 @@
     :defer t
     ;; :commands notmuch
     :init (progn
+            (require 'notmuch)
             (spacemacs/set-leader-keys
               "amm" 'spacemail/hello
               "amn" 'spacemail/new-mail
@@ -108,13 +61,13 @@
               ;;       (lambda (prompt collection initial-input)
               ;;         (completing-read prompt (cons initial-input collection) nil t nil 'notmuch-address-history)))
 
-              (evilified-state-evilify-map 'notmuch-hello-mode-map
+              (evilified-state-evilify-map notmuch-hello-mode-map
                 :mode notmuch-hello-mode
                 :bindings
                 (kbd "q") 'notmuch-bury-or-kill-this-buffer
                 )
 
-              (evilified-state-evilify-map 'notmuch-search-mode-map
+              (evilified-state-evilify-map notmuch-search-mode-map
                 :mode notmuch-search-mode
                 :bindings
                 (kbd "q") 'notmuch-bury-or-kill-this-buffer
@@ -122,7 +75,7 @@
                 (kbd "s") 'notmuch-tree-to-tree
                 )
 
-              (evilified-state-evilify-map 'notmuch-tree-mode-map
+              (evilified-state-evilify-map notmuch-tree-mode-map
                 :mode notmuch-tree-mode
                 :bindings
                 (kbd "q") 'notmuch-bury-or-kill-this-buffer
@@ -136,9 +89,12 @@
                 (kbd "s") 'notmuch-tree-to-tree
                 )
 
-              (evilified-state-evilify-map 'notmuch-show-stash-map :mode notmuch-show-mode)
-              (evilified-state-evilify-map 'notmuch-show-part-map :mode notmuch-show-mode)
-              (evilified-state-evilify-map 'notmuch-show-mode-map :mode notmuch-show-mode
+              (evilified-state-evilify-map notmuch-show-stash-map
+                :mode notmuch-show-mode)
+              (evilified-state-evilify-map notmuch-show-part-map
+                :mode notmuch-show-mode)
+              (evilified-state-evilify-map notmuch-show-mode-map
+                :mode notmuch-show-mode
                 :bindings
                 (kbd "N") 'notmuch-show-next-message
                 (kbd "n") 'notmuch-show-next-open-message
@@ -180,6 +136,9 @@
   "Initialize the package"
   (use-package notmuch-labeler
     :defer t
+    :init (progn
+            (require 'notmuch)
+            )
     )
   )
 
@@ -188,89 +147,7 @@
   (use-package w3m
     :defer t
     :init (progn
+            (require 'w3m)
             (setq w3m-fill-column 72))
     )
   )
-
-(setq-default notmuch-search-oldest-first nil)
-(setq-default notmuch-archive-tags '("-inbox" "-unread"))
-(eval-after-load "org"
-  '(require 'org-notmuch))
-
-(defun notmuch-tree-mark-message-unread-then-next (&optional unread)
-  "Mark the current message as unread and move to next matching message."
-  (interactive "P")
-  (notmuch-tree-mark-message-read t)
-  (notmuch-tree-next-matching-message))
-
-(defun notmuch-tree-mark-message-read-then-next (&optional unread)
-  "Mark the current message as read and move to next matching message."
-  (interactive "P")
-  (notmuch-tree-mark-message-read nil)
-  (notmuch-tree-next-matching-message))
-
-(defun notmuch-tree-mark-message-read (&optional unread)
-  (interactive "P")
-  (notmuch-tree-tag (notmuch-tag-change-list '("-unread") unread)))
-
-(defun notmuch-tree-unarchive-thread (&optional unarchive)
-  (interactive "P")
-  (when notmuch-archive-tags
-    (notmuch-tree-tag-thread
-     (notmuch-tag-change-list notmuch-archive-tags t))))
-
-(eval-after-load "message"
-  '(defun message-insert-signature (&optional force)
-    "Insert a signature.  See documentation for variable `message-signature'."
-    (interactive (list 0))
-    (let* ((signature
-            (cond
-             ((and (null message-signature)
-                   (eq force 0))
-              (save-excursion
-                (goto-char (point-max))
-                (not (re-search-backward message-signature-separator nil t))))
-             ((and (null message-signature)
-                   force)
-              t)
-             ((functionp message-signature)
-              (funcall message-signature))
-             ((listp message-signature)
-              (eval message-signature))
-             (t message-signature)))
-           signature-file)
-      (setq signature
-            (cond ((stringp signature)
-                   signature)
-                  ((and (eq t signature) message-signature-file)
-                   (setq signature-file
-                         (if (and message-signature-directory
-                                  ;; don't actually use the signature directory
-                                  ;; if message-signature-file contains a path.
-                                  (not (file-name-directory
-                                        message-signature-file)))
-                             (expand-file-name message-signature-file
-                                               message-signature-directory)
-                           message-signature-file))
-                   (file-exists-p signature-file))))
-      (when signature
-        (goto-char (point-max))
-        ;; Insert the signature.
-        (unless (bolp)
-          (newline))
-        (when message-signature-insert-empty-line
-          (newline))
-        (if (eq signature t)
-            (insert-file-contents signature-file)
-          (insert signature))
-        (goto-char (point-max))
-        (or (bolp) (newline))))))
-
-(eval-after-load "notmuch"
-  '(defun notmuch-show-insert-part-text/calendar (msg part content-type nth depth button)
-    (notmuch-show-insert-part-*/* msg part content-type nth depth button)))
-
-(eval-after-load "notmuch"
-  '(setq notmuch-show-mark-read-tags '("-unread" "+read")))
-(eval-after-load "notmuch"
-  '(setq mm-text-html-renderer 'w3m))
