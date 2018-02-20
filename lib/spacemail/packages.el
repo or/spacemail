@@ -259,3 +259,8 @@
 (eval-after-load "notmuch"
   '(defun notmuch-show-insert-part-text/calendar (msg part content-type nth depth button)
     (notmuch-show-insert-part-*/* msg part content-type nth depth button)))
+
+(eval-after-load "notmuch"
+  '(setq notmuch-show-mark-read-tags '("-unread" "+read")))
+(eval-after-load "notmuch"
+  '(setq mm-text-html-renderer 'gnus-w3m))
