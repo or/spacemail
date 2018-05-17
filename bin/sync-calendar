@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import os.path
 import re
 import sys
@@ -37,6 +38,10 @@ def get_events(cal):
 def load_events(directory):
     entries = {}
     for filename in glob(directory + "/**/*.ics", recursive=True):
+        statinfo = os.stat(filename)
+        if statinfo.st_size > 1024 * 1024:
+            continue
+
         ics_data = open(filename, "rb").read()
         cal = Calendar.from_ical(ics_data)
         # going through all events will make sure the latest version
