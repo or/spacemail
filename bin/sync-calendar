@@ -3,7 +3,8 @@ import os
 import os.path
 import re
 import sys
-from dateutil.rrule import rrulestr
+from dateutil.parser import parse
+from dateutil.rrule import rrulestr, rruleset
 from dateutil.tz import tzlocal
 from datetime import datetime, date, timedelta
 from glob import glob
@@ -44,6 +45,7 @@ def load_events(directory):
 
         ics_data = open(filename, "rb").read()
         cal = Calendar.from_ical(ics_data)
+
         # going through all events will make sure the latest version
         # of it will make it into entries
         for event in get_events(cal):
@@ -113,9 +115,22 @@ def create_element(event, filename):
 
     rrule_string = event.get("rrule")
     if rrule_string:
-        rrule = rrulestr(rrule_string.to_ical().decode("ascii"),
-                         dtstart=start)
-        times = list(rrule.between(after=MIN_TIME, before=MAX_TIME))
+        ruleset = rruleset()
+        ruleset.rrule(
+            rrulestr(
+                rrule_string.to_ical().decode("ascii"),
+                dtstart=start))
+
+        exdates = event.get('exdate', [])
+        if isinstance(exdates, list):
+            for exdate in exdates:
+                t = parse(exdate.to_ical()).astimezone(tzlocal())
+                ruleset.exdate(t)
+        else:
+            t = parse(exdates.to_ical()).astimezone(tzlocal())
+            ruleset.exdate(t)
+
+        times = list(ruleset.between(after=MIN_TIME, before=MAX_TIME))
     else:
         times = []
         if MIN_TIME <= start <= MAX_TIME:
