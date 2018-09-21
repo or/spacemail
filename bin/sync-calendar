@@ -47,8 +47,9 @@ def load_events(directory):
         cal = Calendar.from_ical(ics_data)
 
         # going through all events will make sure the latest version
-        # of it will make it into entries
-        for event in get_events(cal):
+        # of it will make it into entries, but we need to sort them, as
+        # the order is not guaranteed to be chronological
+        for event in sorted(get_events(cal), key=lambda e: e.get("dtstart").dt):
             start = event.get("dtstart")
             d = start.dt
             if isinstance(d, date):
