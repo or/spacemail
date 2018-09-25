@@ -5,7 +5,7 @@ import re
 import sys
 from dateutil.parser import parse
 from dateutil.rrule import rrulestr, rruleset
-from dateutil.tz import tzlocal
+from dateutil.tz import tzlocal, tzutc
 from datetime import datetime, date, timedelta
 from glob import glob
 from icalendar import Calendar
@@ -115,6 +115,19 @@ def create_element(event, filename):
 
     rrule_string = event.get("rrule")
     if rrule_string:
+        if 'UNTIL' in rrule_string:
+            # UNTIL dates in the RRULE string must be UTC, sometimes that doesn't
+            # seem to be specified in the .ics file, so make sure we convert
+            # it in that case
+            until = rrule_string['UNTIL']
+            for i in range(len(until)):
+                d = until[i]
+                if isinstance(d, date):
+                    until[i] = datetime(d.year, d.month, d.day, 23, 59, 59,
+                                        tzinfo=tzutc())
+                elif not d.tzinfo:
+                    until[i] = d.astimezone(tzutc())
+
         ruleset = rruleset()
         ruleset.rrule(
             rrulestr(
