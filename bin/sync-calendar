@@ -2,7 +2,6 @@
 import argparse
 import os
 import os.path
-import re
 from dateutil.parser import parse
 from dateutil.rrule import rrulestr, rruleset
 from dateutil.tz import tzlocal, tzutc
@@ -11,10 +10,6 @@ from glob import glob
 from icalendar import Calendar
 from PyOrgMode import PyOrgMode
 
-BLANK_LINES = re.compile(r'(\n *)(\n *)+', re.MULTILINE)
-TRAILING_SPACES = re.compile(r' +(?=\n)', re.MULTILINE)
-WRAP_AT_80 = re.compile(r'(?<=\n[^\n]{80})(?=[^\n]{10})', re.MULTILINE)
-TRAILING_NEWLINES = re.compile(r'[ \n]+$', re.MULTILINE)
 ORG_TIME_FORMAT = "%Y-%m-%d %a %H:%M"
 CALENDARS_PATH = "~/Library/Calendars"
 ORG_CALENDAR_PATH = "~/org"
