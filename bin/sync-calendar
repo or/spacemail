@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import os.path
 import re
-import sys
 from dateutil.parser import parse
 from dateutil.rrule import rrulestr, rruleset
 from dateutil.tz import tzlocal, tzutc
@@ -10,10 +10,6 @@ from datetime import datetime, date, timedelta
 from glob import glob
 from icalendar import Calendar
 from PyOrgMode import PyOrgMode
-
-num_days_back = 31
-if len(sys.argv) > 1:
-    num_days_back = int(sys.argv[1])
 
 BLANK_LINES = re.compile(r'(\n *)(\n *)+', re.MULTILINE)
 TRAILING_SPACES = re.compile(r' +(?=\n)', re.MULTILINE)
@@ -25,10 +21,6 @@ ORG_CALENDAR_PATH = "~/org"
 
 ORG_CALENDAR_PATH = os.path.expanduser(ORG_CALENDAR_PATH)
 CALENDARS_PATH = os.path.expanduser(CALENDARS_PATH)
-
-MIN_TIME = datetime.now(tzlocal()) - timedelta(days=num_days_back)
-MAX_TIME = datetime.now(tzlocal()) + timedelta(days=31)
-
 
 def get_events(cal):
     for component in cal.walk():
@@ -49,18 +41,14 @@ def load_events(directory):
         # going through all events will make sure the latest version
         # of it will make it into entries, but we need to sort them, as
         # the order is not guaranteed to be chronological
+        # TODO: this still doesn't feel ideal - what's the right way to
+        # consolidate the same event UID across multiple files?
         for event in sorted(get_events(cal), key=lambda e: e.get("dtstart").dt):
-            start = event.get("dtstart")
-            d = start.dt
-            if isinstance(d, date):
-                d = datetime(d.year, d.month, d.day)
-
             uid = event.get("uid")
             if uid not in entries:
-                entries[uid] = (filename, event)
+                entries[uid] = (filename, [event])
             else:
-                # update the event with the changes
-                entries[uid][1].update(event)
+                entries[uid][1].append(event)
 
     return entries
 
@@ -99,12 +87,42 @@ def fix_title(s):
     return s
 
 
-def create_element(event, filename):
-    start = event.get("dtstart").dt
-    end = event.get("dtend").dt
+def create_element(events, filename):
+    start = None
+    end = None
+    rrule_string = None
+    exceptions = []
+    reschedules = []
+    for event in events:
+        new_start = event.get("dtstart").dt
+        new_end = event.get("dtend").dt
+        if not start or new_start < start:
+            start = new_start
+
+        if not end or new_end < end:
+            end = new_end
+
+        new_rrule_string = event.get("rrule")
+        if rrule_string is None and new_rrule_string:
+            rrule_string = new_rrule_string
+
+        exdates = event.get('exdate', [])
+        if isinstance(exdates, list):
+            exceptions += exdates
+        else:
+            exceptions.append(exdates)
+
+        recurrence_id = event.get("recurrence-id")
+        if recurrence_id:
+            reschedules.append((
+                parse(recurrence_id.to_ical()).astimezone(tzlocal()),
+                parse(event.get("dtstart").to_ical()).astimezone(tzlocal()),
+            ))
+
     if not isinstance(start, datetime):
         start = datetime(start.year, start.month, start.day, 0, 0, 0,
                          tzinfo=tzlocal())
+
     if not isinstance(end, datetime):
         end = datetime(end.year, end.month, end.day, 0, 0, 0,
                        tzinfo=tzlocal())
@@ -114,7 +132,6 @@ def create_element(event, filename):
 
     duration = end - start
 
-    rrule_string = event.get("rrule")
     if rrule_string:
         if 'UNTIL' in rrule_string:
             # UNTIL dates in the RRULE string must be UTC, sometimes that doesn't
@@ -135,13 +152,8 @@ def create_element(event, filename):
                 rrule_string.to_ical().decode("ascii"),
                 dtstart=start))
 
-        exdates = event.get('exdate', [])
-        if isinstance(exdates, list):
-            for exdate in exdates:
-                t = parse(exdate.to_ical()).astimezone(tzlocal())
-                ruleset.exdate(t)
-        else:
-            t = parse(exdates.to_ical()).astimezone(tzlocal())
+        for exdate in exceptions:
+            t = parse(exdate.to_ical()).astimezone(tzlocal())
             ruleset.exdate(t)
 
         times = list(ruleset.between(after=MIN_TIME, before=MAX_TIME))
@@ -152,6 +164,13 @@ def create_element(event, filename):
 
     if not times:
         return
+
+    for i in range(len(times)):
+        start = times[i]
+        for planned_start, new_start in reschedules:
+            if start == planned_start:
+                times[i] = new_start
+                break
 
     element = PyOrgMode.OrgNode.Element()
     element.level = 1
@@ -190,23 +209,35 @@ def create_element(event, filename):
     return element
 
 
-def add_event(org_data, event, filename):
-    element = create_element(event, filename)
+def add_events(org_data, events, filename):
+    element = create_element(events, filename)
     if element:
         org_data.root.append_clean(element)
         org_data.root.append_clean("\n")
 
 
-def import_to_org():
-    calendar_file = os.path.join(ORG_CALENDAR_PATH, "calendar.org")
+def import_to_org(output_path):
+    calendar_file = output_path
     entries = load_events(CALENDARS_PATH)
 
     org_data = PyOrgMode.OrgDataStructure()
     org_data.root.append_clean("#+FILETAGS: :calendar:\n\n")
-    for filename, event in entries.values():
-        add_event(org_data, event, filename)
+    for filename, events in entries.values():
+        add_events(org_data, events, filename)
 
     open(calendar_file, "w", encoding="utf-8").write(str(org_data.root))
 
 if __name__ == "__main__":
-    import_to_org()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", "-o",
+                        default=os.path.join(ORG_CALENDAR_PATH, "calendar.org"),
+                        help="the file to write to")
+    parser.add_argument("--num-days-back", default=31, type=int,
+                        help="the number of days to generate events for in hindsight")
+
+    args = parser.parse_args()
+
+    MIN_TIME = datetime.now(tzlocal()) - timedelta(days=args.num_days_back)
+    MAX_TIME = datetime.now(tzlocal()) + timedelta(days=31)
+
+    import_to_org(args.output)
