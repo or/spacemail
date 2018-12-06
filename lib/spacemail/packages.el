@@ -47,7 +47,8 @@
               "s" 'notmuch-tree-to-tree
               "c" 'notmuch-show-stash-map
               "m" 'notmuch-mua-new-mail
-              "w" 'notmuch-show-save-attachments)
+              "w" 'notmuch-show-save-attachments
+              "$" 'notmuch-tree-mark-message-spam)
 
             (spacemacs/set-leader-keys-for-major-mode 'notmuch-message-mode
               "," 'notmuch-mua-send-and-exit
@@ -88,6 +89,7 @@
                 (kbd "}") 'notmuch-tree-scroll-or-next
                 (kbd "{") 'notmuch-tree-scroll-message-window-back
                 (kbd "s") 'notmuch-tree-to-tree
+                (kbd "$") 'notmuch-tree-mark-message-spam
                 )
 
               (evilified-state-evilify-map notmuch-show-stash-map
