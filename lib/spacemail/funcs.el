@@ -116,3 +116,13 @@
 (eval-after-load "notmuch"
   '(defun notmuch-show-insert-part-text/calendar (msg part content-type nth depth button)
     (notmuch-show-insert-part-*/* msg part content-type nth depth button)))
+
+(defun notmuch-tree-archive-thread-and-next-message (&optional unarchive)
+  "Archive each message in thread. And go to next matching message"
+  (interactive "P")
+  (notmuch-tree-archive-thread)
+  (notmuch-tree-next-thread)
+  (while (and (not (eobp)) (not (notmuch-tree-get-match)))
+    (forward-line))
+  (when (window-live-p notmuch-tree-message-window)
+    (notmuch-tree-show-message-in)))

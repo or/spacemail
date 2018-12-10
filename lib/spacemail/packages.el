@@ -42,7 +42,7 @@
               "t-" 'notmuch-tree-remove-tag
               "r" 'notmuch-tree-refresh-view
               ;; "d" 'notmuch-tree-archive-message-then-next
-              ;; "A" 'notmuch-tree-archive-thread
+              "A" 'notmuch-tree-archive-thread-and-next-message
               "g" 'notmuch-poll-and-refresh-this-buffer
               "s" 'notmuch-tree-to-tree
               "c" 'notmuch-show-stash-map
@@ -90,6 +90,7 @@
                 (kbd "{") 'notmuch-tree-scroll-message-window-back
                 (kbd "s") 'notmuch-tree-to-tree
                 (kbd "$") 'notmuch-tree-mark-message-spam
+                (kbd "A") 'notmuch-tree-archive-thread-and-next-message
                 )
 
               (evilified-state-evilify-map notmuch-show-stash-map
