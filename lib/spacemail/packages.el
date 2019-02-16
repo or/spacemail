@@ -15,6 +15,10 @@
     ;; :commands notmuch
     :init (progn
             (require 'notmuch)
+
+            (when spacemail-attachment-default-directory
+              (setq mm-default-directory spacemail-attachment-default-directory))
+
             (spacemacs/set-leader-keys
               "amm" 'counsel-notmuch
               "amn" 'spacemail/new-mail
