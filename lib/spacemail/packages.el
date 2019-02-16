@@ -89,7 +89,7 @@
                 (kbd "}") 'notmuch-tree-scroll-or-next
                 (kbd "{") 'notmuch-tree-scroll-message-window-back
                 (kbd "s") 'notmuch-tree-to-tree
-                (kbd "$") 'notmuch-tree-mark-message-spam
+                (kbd "$") 'notmuch-tree-mark-message-spam-then-next
                 (kbd "A") 'notmuch-tree-archive-thread-and-next-message
                 )
 

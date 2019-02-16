@@ -55,7 +55,7 @@
   (interactive "P")
   (notmuch-tree-tag (notmuch-tag-change-list '("-unread") unread)))
 
-(defun notmuch-tree-mark-message-spam (&optional unread)
+(defun notmuch-tree-mark-message-spam-then-next (&optional unread)
   (interactive "P")
   (notmuch-tree-tag (notmuch-tag-change-list '("+spam" "-inbox" "-unread") unread))
   (notmuch-tree-next-matching-message))
