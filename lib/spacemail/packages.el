@@ -82,6 +82,7 @@
                 :bindings
                 (kbd "q") 'notmuch-bury-or-kill-this-buffer
                 (kbd "r") 'notmuch-tree-mark-message-read-then-next
+                (kbd "i") 'notmuch-tree-mark-message-inbox-then-next
                 (kbd "u") 'notmuch-tree-mark-message-unread-then-next
                 (kbd "U") 'notmuch-tree-unarchive-thread
                 (kbd "?") 'notmuch-help

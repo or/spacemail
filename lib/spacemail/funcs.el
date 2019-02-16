@@ -60,6 +60,11 @@
   (notmuch-tree-tag (notmuch-tag-change-list '("+spam" "-inbox" "-unread") unread))
   (notmuch-tree-next-matching-message))
 
+(defun notmuch-tree-mark-message-inbox-then-next (&optional unread)
+  (interactive "P")
+  (notmuch-tree-tag (notmuch-tag-change-list '("+inbox") unread))
+  (notmuch-tree-next-matching-message))
+
 (defun notmuch-tree-unarchive-thread (&optional unarchive)
   (interactive "P")
   (when notmuch-archive-tags
