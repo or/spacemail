@@ -36,9 +36,9 @@ unread_mails = subprocess.check_output("/usr/local/bin/notmuch search tag:unread
 mails = list(filter(lambda x: x.strip(), unread_mails.decode("utf-8").split("\n")))
 count = len(mails)
 if count:
-    print(":incoming_envelope: {count} unread | color=red".format(count=count))
+    print(":incoming_envelope: {count} threads | color=red".format(count=count))
 else:
-    print("no unread mails | color=#707070")
+    print("no unread mail | color=#707070")
 
 print("---")
 
