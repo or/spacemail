@@ -1,7 +1,7 @@
 ** Requirements
-- offlineimap
+- isync
 #+BEGIN_SRC sh
-$ brew install offlineimap
+$ brew install isync
 #+END_SRC
 - notmuch
 #+BEGIN_SRC sh
@@ -9,14 +9,42 @@ $ brew install notmuch
 #+END_SRC
 - [[http://growl.info/downloads][Growl]] and [[http://growl.info/downloads#growlnotify][GrowlNotify]]
 - [[https://github.com/matryer/bitbar][BitBar]] [[https://github.com/matryer/bitbar/releases/tag/v2.0.0-beta10][v2.0 beta 10]] or higher
+- psutil
+#+begin_src sh
+pip install psutil
+#+end_src
+
+*** Retrieving credentials via macOS Keychain (recommended)
+- build isync from [[https://github.com/or/isync][my fork]], which supports the Keychain look-up
+- add =KeychainName= and =KeychainAccount= to the config, grant mbsync access to
+  the Keychain when prompted
+- more secure than the GPG method below
+
+*** Retrieving credentials via GPG (discouraged)
 - =pinentry-mac= for GPG to ask for the password when decrypting
   =~/.authinfo.gpg=
 #+BEGIN_SRC sh
 $ brew install pinentry-mac
 #+END_SRC
+- anyone with access to your system while you are logged in will be able to run
+  =gpg -d ~/.authinfo.gpg= to retrieve the password
 
 ** Installation
 Run BitBar and set the plugins directory to =bitbar-plugins=.
+
+*** Alternative setup with offlineimap
+Previously I used offlineimap, but isync is faster and allows the more secure
+Keychain access. However, offlineimap can still be used like before, see the git
+history to see what changes might be necessary.
+
+*** Migrate from offlineimap
+1. Backup your mail directory
+2. Delete your mail directory
+3. Set up mbsync with the same mail directory
+4. Run mbsync, which fetches all mails again
+5. Run notmuch-poll, everything should work as expected afterwards, files
+   previously archived will have the offlineimap naming scheme, but notmuch
+   isn't fussy about that
 
 ** Options
 If you want to archive all email that is older than 30 days, then you can
@@ -26,5 +54,5 @@ add this to =~/.spacemailrc=:
 archive = true
 #+END_QUOTE
 
-Archiving will move old emails to a local folder, so offlineimap will delete
+Archiving will move old emails to a local folder, so mbsync will delete
 them on the server on the next sync.

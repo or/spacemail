@@ -1,30 +1,22 @@
 #!/usr/bin/env PYTHONIOENCODING=UTF-8 /usr/local/bin/python3
 # encoding: utf-8
 import os
+import psutil
 import re
 import subprocess
 import sys
 
-def is_notmuch_running():
-    output = subprocess.check_output(["ps", "-x"])
-    for line in output.decode("utf-8").split("\n"):
-        words = line.split()
-
-        if len(words) <= 3:
-            continue
-
-        if words[3] == "notmuch":
-            return True
-
-        if len(words) <= 4:
-            continue
-
-        if words[4].endswith("offlineimap.py"):
-            return True
+def is_sync_running():
+    for proc in psutil.process_iter():
+        try:
+            if proc.name().lower() in ["notmuch", "mbsync"]:
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
 
     return False
 
-if is_notmuch_running():
+if is_sync_running():
     print("waiting for sync... | color=gray")
     sys.exit(0)
 

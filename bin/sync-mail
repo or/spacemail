@@ -27,5 +27,5 @@ fi
 
 echo "syncing..."
 echo "~~~"
-offlineimap >> /tmp/sync-mail.log 2>&1 || fail
+mbsync -a >> /tmp/sync-mail.log 2>&1 || fail
 ./notmuch-poll
