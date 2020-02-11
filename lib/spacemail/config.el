@@ -3,7 +3,7 @@
    Can be the path to the directory or `nil'.")
 
 (eval-after-load "org"
-  '(require 'org-notmuch))
+  '(require 'ol-notmuch))
 
 (setq-default notmuch-search-oldest-first nil)
 (setq-default notmuch-archive-tags '("-inbox" "-unread"))
