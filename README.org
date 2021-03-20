@@ -9,17 +9,25 @@ $ brew install notmuch
 #+END_SRC
 - [[http://growl.info/downloads][Growl]] and [[http://growl.info/downloads#growlnotify][GrowlNotify]]
 - [[https://github.com/matryer/xbar][xbar]] [[https://github.com/matryer/xbar/releases/tag/v2.0.32-beta][v2.0-32 beta]] at time of writing (before that it was called [[https://github.com/matryer/bitbar][BitBar]] and I used [[https://github.com/matryer/bitbar/releases/tag/v2.0.0-beta10][v2.0 beta 10]])
-- the files in xbar-plugins need to be symlinked into =~/Library/Application Support/xbar/plugins=
 - psutil
 #+begin_src sh
 pip install psutil
 #+end_src
 
-*** Retrieving credentials via macOS Keychain (recommended)
+** Installation
+*** xbar
+Symlink the files in xbar-plugins into =~/Library/Application
+Support/xbar/plugins= and start xbar.
+*** Emacs
+- Doom Emacs: symlink =lib/spacemail= into your doom directory and add =(load!
+  "spacemail/spacemail")= to your =config.el=
+- Spacemacs: add =lib/spacemail/packages.el=
+*** isync
+**** Retrieving credentials via macOS Keychain (recommended)
 - use the =UseKeychain= setting, see [[https://www.mankier.com/1/mbsync][mbsync man page]] for details
 - more secure than the GPG method below
 
-*** Retrieving credentials via GPG (discouraged)
+**** Retrieving credentials via GPG (discouraged)
 - =pinentry-mac= for GPG to ask for the password when decrypting
   =~/.authinfo.gpg=
 #+BEGIN_SRC sh
@@ -27,9 +35,6 @@ $ brew install pinentry-mac
 #+END_SRC
 - anyone with access to your system while you are logged in will be able to run
   =gpg -d ~/.authinfo.gpg= to retrieve the password
-
-** Installation
-Run BitBar and set the plugins directory to =bitbar-plugins=.
 
 *** Alternative setup with offlineimap
 Previously I used offlineimap, but isync is faster and allows the more secure
