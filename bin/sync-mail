@@ -20,12 +20,8 @@ function fail {
 
 run_archive=$(grep archive ~/.spacemailrc | sed -e 's/.*= *//' -e 's/ +$//')
 if [ "$run_archive" == "true" ]; then
-    echo "archiving mail..."
-    echo "~~~"
     ./notmuch-archive >/dev/null 2>&1
 fi
 
-echo "syncing..."
-echo "~~~"
 mbsync -a >> /tmp/sync-mail.log 2>&1 || fail
 ./notmuch-poll

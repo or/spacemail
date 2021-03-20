@@ -8,16 +8,15 @@ $ brew install isync
 $ brew install notmuch
 #+END_SRC
 - [[http://growl.info/downloads][Growl]] and [[http://growl.info/downloads#growlnotify][GrowlNotify]]
-- [[https://github.com/matryer/bitbar][BitBar]] [[https://github.com/matryer/bitbar/releases/tag/v2.0.0-beta10][v2.0 beta 10]] or higher
+- [[https://github.com/matryer/xbar][xbar]] [[https://github.com/matryer/xbar/releases/tag/v2.0.32-beta][v2.0-32 beta]] at time of writing (before that it was called [[https://github.com/matryer/bitbar][BitBar]] and I used [[https://github.com/matryer/bitbar/releases/tag/v2.0.0-beta10][v2.0 beta 10]])
+- the files in xbar-plugins need to be symlinked into =~/Library/Application Support/xbar/plugins=
 - psutil
 #+begin_src sh
 pip install psutil
 #+end_src
 
 *** Retrieving credentials via macOS Keychain (recommended)
-- build isync from [[https://github.com/or/isync][my fork]], which supports the Keychain look-up
-- add =KeychainName= and =KeychainAccount= to the config, grant mbsync access to
-  the Keychain when prompted
+- use the =UseKeychain= setting, see [[https://www.mankier.com/1/mbsync][mbsync man page]] for details
 - more secure than the GPG method below
 
 *** Retrieving credentials via GPG (discouraged)

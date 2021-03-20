@@ -10,9 +10,6 @@ fi
 
 cd "$(dirname "$script_path")"
 
-echo "importing mail..."
-echo "~~~"
-
 previous_unread_count=$(notmuch count --output=threads tag:unread)
 notmuch new >> $output 2>&1
 
@@ -28,4 +25,3 @@ if [ "$new_count" -gt 0 ]; then
 else
   echo "no new mail | color=#606060"
 fi
-echo "~~~"
