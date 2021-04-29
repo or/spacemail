@@ -1,10 +1,15 @@
 #!/usr/bin/env PYTHONIOENCODING=UTF-8 /usr/local/bin/python3
 # encoding: utf-8
 import os
+import os.path
 import psutil
 import re
 import subprocess
 import sys
+
+if os.path.isfile("/tmp/silence-mail"):
+    print("silenced | color=#707070")
+    sys.exit(0)
 
 def is_sync_running():
     for proc in psutil.process_iter():
