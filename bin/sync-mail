@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export PATH=/usr/local/bin:$PATH
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
 script_path=$(readlink "$0")
 if [ -z "$script_path" ]; then
     script_path="$0"

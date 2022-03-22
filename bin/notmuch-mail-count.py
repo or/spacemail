@@ -1,4 +1,4 @@
-#!/usr/bin/env PYTHONIOENCODING=UTF-8 /usr/local/bin/python3
+#!/usr/bin/env PYTHONIOENCODING=UTF-8 python3
 # encoding: utf-8
 import os
 import os.path
@@ -25,8 +25,8 @@ if is_sync_running():
     print("waiting for sync... | color=gray")
     sys.exit(0)
 
-unread_mails = subprocess.check_output("/usr/local/bin/notmuch tag -inbox -new -unread +sent folder:sent AND tag:unread AND tag:new".split())
-unread_mails = subprocess.check_output("/usr/local/bin/notmuch search tag:unread".split())
+unread_mails = subprocess.check_output("/opt/homebrew/bin/notmuch tag -inbox -new -unread +sent folder:sent AND tag:unread AND tag:new".split())
+unread_mails = subprocess.check_output("/opt/homebrew/bin/notmuch search tag:unread".split())
 
 mails = list(filter(lambda x: x.strip(), unread_mails.decode("utf-8").split("\n")))
 count = len(mails)
