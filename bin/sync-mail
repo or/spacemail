@@ -1,6 +1,11 @@
 #!/bin/bash
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
+export PATH="$HOME/bin:/usr/local/bin:$PATH"
+
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
 
 script_path=$(readlink "$0")
 if [ -z "$script_path" ]; then
