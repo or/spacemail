@@ -28,7 +28,7 @@ if is_sync_running():
     sys.exit(0)
 
 unread_mails = subprocess.check_output(
-    "/opt/homebrew/bin/notmuch tag -inbox -new -unread +sent folder:sent AND tag:unread AND tag:new".split()
+    "/opt/homebrew/bin/notmuch tag -inbox -new -unread +sent 'folder:/.*Sent.Items/ AND tag:unread AND tag:new".split()
 )
 unread_mails = subprocess.check_output(
     "/opt/homebrew/bin/notmuch search tag:unread".split()

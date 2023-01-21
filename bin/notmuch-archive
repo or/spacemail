@@ -1,7 +1,22 @@
 #!/bin/bash -e
 
+function archive-mail () {
+  maildir="$1"
+  filename="$2"
+  relative="${filename#"$maildir"/}"
+  relative_to_account="${relative#*/}"
+  account="${relative%%/*}"
+  message_name="${relative##*/}"
+  target_dir="$maildir/$account/Archive/cur"
+  mkdir -p "$target_dir"
+  echo "archiving ${relative}..."
+  mv "$filename" "$target_dir/$message_name"
+}
+export -f archive-mail
+
 maildir=$(grep -A 3 '\[database\]' ~/.notmuch-config | grep path | sed 's/^ *path=//')
+maildir="${maildir%/}"
 
 notmuch tag +archived NOT tag:archived AND NOT tag:unread AND NOT tag:inbox AND date:..31-days
 
-notmuch search --output=files NOT folder:archive AND tag:archived | xargs -I{} mv {} $maildir/archive/cur
+notmuch search --output=files NOT folder:/.*\/Archive/ AND tag:archived | xargs -n 1 bash -c 'archive-mail "$@"' _ "$maildir"
