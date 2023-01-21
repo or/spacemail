@@ -1,3 +1,7 @@
+*WARNING*: This repository is severely outdated and a bit messy. It started using Spacemacs,
+but shifted towards Doom Emacs, without much explanation or separation. I'll archive it as it is
+now and make a clean version for just Doom Emacs here: https://github.com/or/ormail
+
 ** Requirements
 - isync
 #+BEGIN_SRC sh
