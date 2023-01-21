@@ -11,6 +11,7 @@ if os.path.isfile("/tmp/silence-mail"):
     print("silenced | color=#707070")
     sys.exit(0)
 
+
 def is_sync_running():
     for proc in psutil.process_iter():
         try:
@@ -21,12 +22,17 @@ def is_sync_running():
 
     return False
 
+
 if is_sync_running():
     print("waiting for sync... | color=gray")
     sys.exit(0)
 
-unread_mails = subprocess.check_output("/opt/homebrew/bin/notmuch tag -inbox -new -unread +sent folder:sent AND tag:unread AND tag:new".split())
-unread_mails = subprocess.check_output("/opt/homebrew/bin/notmuch search tag:unread".split())
+unread_mails = subprocess.check_output(
+    "/opt/homebrew/bin/notmuch tag -inbox -new -unread +sent folder:sent AND tag:unread AND tag:new".split()
+)
+unread_mails = subprocess.check_output(
+    "/opt/homebrew/bin/notmuch search tag:unread".split()
+)
 
 mails = list(filter(lambda x: x.strip(), unread_mails.decode("utf-8").split("\n")))
 count = len(mails)
@@ -37,7 +43,9 @@ else:
 
 print("---")
 
-pattern = re.compile(r'^(?P<thread>\S*) +\S+ +\S+ +\S+ +(?P<people>.*?); +(?P<subject>.*?)( +\([^)]*\))?$')
+pattern = re.compile(
+    r"^(?P<thread>\S*) +\S+ +\S+ +\S+ +(?P<people>.*?); +(?P<subject>.*?)( +\([^)]*\))?$"
+)
 for m in mails:
     mo = pattern.match(m)
     if not mo:
@@ -45,8 +53,11 @@ for m in mails:
         exit(-1)
 
     thread = mo.group("thread")
-    subject = mo.group("subject")[:64].replace('|', ':')
-    people = " ".join(mo.group("people").split()[:2]).replace('|', ',').strip(",")
+    subject = mo.group("subject")[:64].replace("|", ":")
+    people = " ".join(mo.group("people").split()[:2]).replace("|", ",").strip(",")
 
-    print("{subject} - {people} | color=green terminal=false"
-          .format(thread=thread, subject=subject, people=people))
+    print(
+        "{subject} - {people} | color=green terminal=false".format(
+            subject=subject, people=people
+        )
+    )
